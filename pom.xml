@@ -20,6 +20,7 @@
     <micronaut.version>2.5.4</micronaut.version>
     <exec.mainClass>com.example.Application</exec.mainClass>
     <micronaut.runtime>netty</micronaut.runtime>
+    <mockito.version>3.10.0</mockito.version>
   </properties>
 
   <repositories>
@@ -54,6 +55,18 @@
       <groupId>io.micronaut.test</groupId>
       <artifactId>micronaut-test-junit5</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+      <version>${mockito.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <scope>test</scope>
+      <version>${mockito.version}</version>
     </dependency>
     <dependency>
       <groupId>io.micronaut</groupId>
