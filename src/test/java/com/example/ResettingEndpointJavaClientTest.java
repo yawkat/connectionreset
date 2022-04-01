@@ -3,11 +3,10 @@ package com.example;
 import io.micronaut.runtime.server.EmbeddedServer;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.reactivex.Flowable;
-import org.junit.jupiter.api.Assertions;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -35,7 +34,7 @@ public class ResettingEndpointJavaClientTest {
 
     @Test
     void client_shouldReadData() throws Exception {
-        when(resettingService.getSomeFlowable()).thenReturn(Flowable.just("<somexml>", "</somexml>").map(String::getBytes));
+        when(resettingService.getSomeFlowable()).thenReturn(Flux.just("<somexml>", "</somexml>").map(String::getBytes));
 
         HttpResponse<String> response = httpClient.send(
                 HttpRequest.newBuilder()
@@ -51,13 +50,13 @@ public class ResettingEndpointJavaClientTest {
 
     @Test
     void client_shouldInform_whenConnectionReset() throws Exception {
-        when(resettingService.getSomeFlowable()).thenReturn(Flowable
+        when(resettingService.getSomeFlowable()).thenReturn(Flux
                 .just("<somexml>")
                 .concatWith(
-                        Flowable.error(() -> new RuntimeException("Some error with xml construction"))
+                        Flux.error(() -> new RuntimeException("Some error with xml construction"))
                 )
                 .concatWith(
-                        Flowable.just("</somexml>")
+                        Flux.just("</somexml>")
                 )
                 .map(String::getBytes)
         );

@@ -1,13 +1,12 @@
 package com.example;
 
-import io.reactivex.Flowable;
-
-import javax.inject.Singleton;
+import jakarta.inject.Singleton;
+import reactor.core.publisher.Flux;
 
 @Singleton
 public class ResettingService {
 
-    public Flowable<byte[]> getSomeFlowable() {
-        return Flowable.just("<somexml>", "</somexml>").map(String::getBytes);
+    public Flux<byte[]> getSomeFlowable() {
+        return Flux.just("<somexml>", "</somexml>").map(String::getBytes);
     }
 }

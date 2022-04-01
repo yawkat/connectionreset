@@ -2,7 +2,7 @@ package com.example;
 
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
-import io.reactivex.Flowable;
+import reactor.core.publisher.Flux;
 
 @Controller("/v1")
 public class ResettingEndpoint {
@@ -14,7 +14,7 @@ public class ResettingEndpoint {
     }
 
     @Get("/stream")
-    public Flowable<byte[]> getStream() {
+    public Flux<byte[]> getStream() {
         return resettingService.getSomeFlowable();
     }
 }

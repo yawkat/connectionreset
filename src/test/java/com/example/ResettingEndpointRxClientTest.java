@@ -1,14 +1,14 @@
 package com.example;
 
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.client.RxHttpClient;
+import io.micronaut.http.client.HttpClient;
 import io.micronaut.http.client.annotation.Client;
 import io.micronaut.test.annotation.MockBean;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import io.reactivex.Flowable;
+import jakarta.inject.Inject;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import javax.inject.Inject;
+import reactor.core.publisher.Flux;
 
 import static io.micronaut.http.HttpRequest.GET;
 import static org.mockito.Mockito.mock;
@@ -22,7 +22,7 @@ public class ResettingEndpointRxClientTest {
 
     @Inject
     @Client("/v1")
-    private RxHttpClient rxHttpClient;
+    private HttpClient rxHttpClient;
 
     @MockBean(ResettingService.class)
     ResettingService resettingService() {
@@ -31,37 +31,38 @@ public class ResettingEndpointRxClientTest {
 
     @Test
     void client_shouldReadData() throws Exception {
-        when(resettingService.getSomeFlowable()).thenReturn(Flowable.just("<somexml>", "</somexml>").map(String::getBytes));
+        when(resettingService.getSomeFlowable()).thenReturn(Flux.just("<somexml>", "</somexml>").map(String::getBytes));
 
-        rxHttpClient.exchange(GET("/stream"), byte[].class)
-                .map(HttpResponse::body)
-                .map(String::new)
-                .test()
-                .await()
-                .assertNoErrors()
-                .assertValue("<somexml></somexml>"::equals);
+
+        Assertions.assertEquals(
+                "<somexml></somexml>",
+                Flux.from(rxHttpClient.exchange(GET("/stream"), byte[].class))
+                        .map(HttpResponse::body)
+                        .map(String::new)
+                        .blockLast()
+        );
     }
 
 
     @Test
     void client_shouldInform_whenConnectionReset() throws Exception {
-        when(resettingService.getSomeFlowable()).thenReturn(Flowable
+        when(resettingService.getSomeFlowable()).thenReturn(Flux
                 .just("<somexml>")
                 .concatWith(
-                        Flowable.error(() -> new RuntimeException("Some error with xml construction"))
+                        Flux.error(() -> new RuntimeException("Some error with xml construction"))
                 )
                 .concatWith(
-                        Flowable.just("</somexml>")
+                        Flux.just("</somexml>")
                 )
                 .map(String::getBytes)
         );
 
-        rxHttpClient.exchange(GET("/stream"), byte[].class)
-                .map(HttpResponse::body)
-                .map(String::new)
-                .test()
-                .await()
-                .assertNoErrors() // There should be some error!
-                .assertValue("<somexml>"::equals);
+        Assertions.assertEquals(
+                "<somexml>",
+                Flux.from(rxHttpClient.exchange(GET("/stream"), byte[].class))
+                        .map(HttpResponse::body)
+                        .map(String::new)
+                        .blockLast()
+        );
     }
 }
